@@ -702,16 +702,28 @@ static int const RCTVideoUnset = -1;
         CGRect newRect = [change[NSKeyValueChangeNewKey] CGRectValue];
 
         if (!CGRectEqualToRect(oldRect, newRect)) {
-          if (CGRectEqualToRect(newRect, [UIScreen mainScreen].bounds)) {
-            NSLog(@"in fullscreen");
-            self.onVideoFullscreenPlayerDidPresent(@{@"target": self.reactTag});
-          } else {
-            NSLog(@"not fullscreen");
-            self.onVideoFullscreenPlayerDidDismiss(@{@"target": self.reactTag});
-          }
+            if (CGRectEqualToRect(newRect, [UIScreen mainScreen].bounds)) {
+                NSLog(@"Presenting fullscreen");
+                [self.reactViewController.view setFrame:[UIScreen mainScreen].bounds];
+                [self.reactViewController.view setNeedsLayout];
 
-          [self.reactViewController.view setFrame:[UIScreen mainScreen].bounds];
-          [self.reactViewController.view setNeedsLayout];
+                _playerViewController.showsPlaybackControls = YES;
+                _fullscreenPlayerPresented = YES;
+                if (self.onVideoFullscreenPlayerWillPresent) {
+                    self.onVideoFullscreenPlayerWillPresent(@{@"target": self.reactTag});
+                }
+            } else if (CGRectEqualToRect(oldRect, [UIScreen mainScreen].bounds)) {
+                NSLog(@"Dismissing fullscreen");
+                [self.reactViewController.view setFrame:[UIScreen mainScreen].bounds];
+                [self.reactViewController.view setNeedsLayout];
+                if (self.onVideoFullscreenPlayerWillDismiss) {
+                    self.onVideoFullscreenPlayerDidDismiss(@{@"target": self.reactTag});
+                }
+            } else {
+                NSLog(@"Other fullscreen");
+                [self.reactViewController.view setFrame:[UIScreen mainScreen].bounds];
+                [self.reactViewController.view setNeedsLayout];
+            }
         }
 
         return;
