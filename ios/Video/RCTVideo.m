@@ -711,11 +711,12 @@ static int const RCTVideoUnset = -1;
                       _playerViewController.isFullScreen = true;
                       [self videoPlayerWillPresentFullScreen];
                   } else if (CGRectEqualToRect(oldRect, bounds) && _playerViewController.isFullScreen) {
+                      NSLog(@"dismissing fullscreen");
                       
                       _playerViewController.isFullScreen = false;
-                      NSLog(@"dismissing fullscreen");
-                      [self videoPlayerViewControllerDidDismiss:_playerViewController];
-                      
+                      if (self.onVideoFullscreenPlayerWillDismiss) {
+                          self.onVideoFullscreenPlayerWillDismiss(@{@"target": self.reactTag});
+                      }
                   } else {
                       NSLog(@"Not fullscreen");
                   }
