@@ -730,6 +730,7 @@ static int const RCTVideoUnset = -1;
               return;
           }
       }
+  }
 }
 
 - (void)attachListeners
@@ -841,7 +842,7 @@ static int const RCTVideoUnset = -1;
   } else if (_pipController && !_pictureInPicture && [_pipController isPictureInPictureActive]) {
     dispatch_async(dispatch_get_main_queue(), ^{
       [_pipController stopPictureInPicture];
-	});
+    });
   }
   #endif
 }
@@ -1232,6 +1233,11 @@ static int const RCTVideoUnset = -1;
 }
 
 - (void)setFullscreen:(BOOL) fullscreen {
+ if (_playerViewController != nil && fullscreen && !_fullscreenPlayerPresented) {
+        [_playerViewController goFullscreen];
+        _fullscreenPlayerPresented = true;
+        return;
+    }
   if( fullscreen && !_fullscreenPlayerPresented && _player )
   {
     // Ensure player view controller is not null
@@ -1338,12 +1344,6 @@ static int const RCTVideoUnset = -1;
 }
 
 - (void)setControls:(BOOL)controls {
-    if (_playerViewController != nil && fullscreen && !_fullscreenPlayerPresented) {
-           [_playerViewController goFullscreen];
-          _fullscreenPlayerPresented = true;
-          return;
-    
-    }
   if( _controls != controls || (!_playerLayer && !_playerViewController) )
   {
     _controls = controls;
