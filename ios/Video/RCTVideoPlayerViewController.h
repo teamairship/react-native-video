@@ -12,6 +12,9 @@
 
 @interface RCTVideoPlayerViewController : AVPlayerViewController
 @property (nonatomic, weak) id<RCTVideoPlayerViewControllerDelegate> rctDelegate;
+@property (nonatomic) BOOL isFullScreen;
+- (void)goFullscreen;
+
 
 // Optional paramters
 @property (nonatomic, weak) NSString* preferredOrientation;

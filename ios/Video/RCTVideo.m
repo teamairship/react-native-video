@@ -697,38 +697,39 @@ static int const RCTVideoUnset = -1;
   } else if (object == _playerViewController.contentOverlayView) {
       // when controls==true, this is a hack to reset the rootview when rotation happens in fullscreen
       if ([keyPath isEqualToString:@"frame"]) {
-
-        CGRect oldRect = [change[NSKeyValueChangeOldKey] CGRectValue];
-        CGRect newRect = [change[NSKeyValueChangeNewKey] CGRectValue];
-
-        if (!CGRectEqualToRect(oldRect, newRect)) {
-            if (CGRectEqualToRect(newRect, [UIScreen mainScreen].bounds)) {
-                NSLog(@"Presenting fullscreen");
-                [self.reactViewController.view setFrame:[UIScreen mainScreen].bounds];
-                [self.reactViewController.view setNeedsLayout];
-
-                _playerViewController.showsPlaybackControls = YES;
-                _fullscreenPlayerPresented = YES;
-                if (self.onVideoFullscreenPlayerWillPresent) {
-                    self.onVideoFullscreenPlayerWillPresent(@{@"target": self.reactTag});
-                }
-            } else if (CGRectEqualToRect(oldRect, [UIScreen mainScreen].bounds)) {
-                NSLog(@"Dismissing fullscreen");
-                [self.reactViewController.view setFrame:[UIScreen mainScreen].bounds];
-                [self.reactViewController.view setNeedsLayout];
-                if (self.onVideoFullscreenPlayerWillDismiss) {
-                    self.onVideoFullscreenPlayerDidDismiss(@{@"target": self.reactTag});
-                }
-            } else {
-                NSLog(@"Other fullscreen");
-                [self.reactViewController.view setFrame:[UIScreen mainScreen].bounds];
-                [self.reactViewController.view setNeedsLayout];
-            }
-        }
-
-        return;
+          
+          CGRect oldRect = [change[NSKeyValueChangeOldKey] CGRectValue];
+          CGRect newRect = [change[NSKeyValueChangeNewKey] CGRectValue];
+          
+          if ([keyPath isEqualToString:@"frame"]) {
+              
+              CGRect oldRect = [change[NSKeyValueChangeOldKey] CGRectValue];
+              CGRect newRect = [change[NSKeyValueChangeNewKey] CGRectValue];
+              CGRect bounds = [UIScreen mainScreen].bounds;
+              
+              if (!CGRectEqualToRect(oldRect, newRect)) {
+                  
+                  if (CGRectEqualToRect(newRect, bounds) && !_playerViewController.isFullScreen) {
+                      NSLog(@"Presenting fullscreen");
+                      
+                      _playerViewController.isFullScreen = true;
+                      [self videoPlayerWillPresentFullScreen];
+                  } else if (CGRectEqualToRect(oldRect, bounds) && _playerViewController.isFullScreen) {
+                      
+                      _playerViewController.isFullScreen = false;
+                      NSLog(@"dismissing fullscreen");
+                      [self videoPlayerViewControllerDidDismiss:_playerViewController];
+                      
+                  } else {
+                      NSLog(@"Not fullscreen");
+                      [self.reactViewController.view setFrame:[UIScreen mainScreen].bounds];
+                      [self.reactViewController.view setNeedsLayout];
+                  }
+              }
+              
+              return;
+          }
       }
-  }
 }
 
 - (void)attachListeners
@@ -1336,8 +1337,13 @@ static int const RCTVideoUnset = -1;
   }
 }
 
-- (void)setControls:(BOOL)controls
-{
+- (void)setControls:(BOOL)controls {
+    if (_playerViewController != nil && fullscreen && !_fullscreenPlayerPresented) {
+           [_playerViewController goFullscreen];
+          _fullscreenPlayerPresented = true;
+          return;
+    
+    }
   if( _controls != controls || (!_playerLayer && !_playerViewController) )
   {
     _controls = controls;
@@ -1397,6 +1403,19 @@ static int const RCTVideoUnset = -1;
       self.onVideoFullscreenPlayerDidDismiss(@{@"target": self.reactTag});
     }
   }
+}
+    
+- (void)videoPlayerWillPresentFullScreen {
+    if (self.onVideoFullscreenPlayerWillPresent) {
+        self.onVideoFullscreenPlayerWillPresent(@{@"target": self.reactTag});
+    }
+}
+    
+- (void)videoPlayerDidPresentFullScreen {
+    if (self.onVideoFullscreenPlayerDidPresent) {
+        self.onVideoFullscreenPlayerDidPresent(@{@"target": self.reactTag});
+        _fullscreenPlayerPresented = YES;
+    }
 }
 
 - (void)setFilter:(NSString *)filterName {
