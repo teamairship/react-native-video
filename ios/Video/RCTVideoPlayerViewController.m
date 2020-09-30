@@ -45,9 +45,10 @@
 }
 
 - (void)goFullscreen {
-    if (_isFullScreen) {
+    if (_isFullScreen || ![self.view isDescendantOfView:self.parentViewController.view]) {
         return;
     }
+    
     _isFullScreen = true;
     
     [_rctDelegate videoPlayerWillPresentFullScreen];
