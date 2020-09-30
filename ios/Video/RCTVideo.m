@@ -718,7 +718,7 @@ static int const RCTVideoUnset = -1;
                           self.onVideoFullscreenPlayerWillDismiss(@{@"target": self.reactTag});
                       }
                   } else {
-                      NSLog(@"Not fullscreen");
+                      NSLog(@"Other");
                   }
               }
               

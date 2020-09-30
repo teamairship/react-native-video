@@ -18,7 +18,6 @@
 {
   [super viewDidDisappear:animated];
   [_rctDelegate videoPlayerViewControllerWillDismiss:self];
-  [_rctDelegate videoPlayerViewControllerDidDismiss:self];
 }
 
 - (void)viewDidLoad {
